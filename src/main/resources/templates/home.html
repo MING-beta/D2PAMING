@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D2 TRADER - 디아블로2 아이템 거래소</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .home-layout {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+            align-items: flex-start;
+        }
+        .home-posts-panel {
+            flex: 7;
+            min-width: 280px;
+        }
+        .home-tz-panel {
+            flex: 3;
+            min-width: 260px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        @media (max-width: 640px) {
+            .home-layout {
+                flex-direction: column;
+            }
+            .home-posts-panel,
+            .home-tz-panel {
+                flex: none;
+                min-width: 100%;
+            }
+            .home-layout h2 {
+                font-size: 1.1rem !important;
+            }
+            .tz-current-name {
+                font-size: 1.1rem !important;
+            }
+        }
+    </style>
+</head>
+<body class="dark-theme">
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="container">
+        <div class="home-layout">
+            <!-- 왼쪽: 매물 리스트 (70%) -->
+            <div class="home-posts-panel">
+                <h2 style="color: var(--brand-primary); margin-bottom: 20px; font-size: 1.4rem; font-weight: 700; font-family: 'Cinzel', serif;">최근 등록된 매물</h2>
+                
+                <div class="glassmorphism" style="padding: 24px; overflow-x: auto;">
+                    <table class="board-table" style="margin-bottom:0; width: 100%; border-collapse: collapse; min-width: 280px;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--border-color);">
+                                <th style="padding: 12px 8px; text-align: center; color: var(--text-secondary); font-size: 0.9rem;">서버</th>
+                                <th style="padding: 12px 8px; text-align: center; color: var(--text-secondary); font-size: 0.9rem;">분류</th>
+                                <th style="padding: 12px 8px; text-align: left; color: var(--text-secondary); font-size: 0.9rem;">아이템</th>
+                                <th style="padding: 12px 8px; text-align: center; color: var(--text-secondary); font-size: 0.9rem;">요구 가격</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(recentPosts)}">
+                                <td colspan="4" class="text-center" style="padding: 40px; color: var(--text-tertiary);">최근 등록된 거래글이 없습니다.</td>
+                            </tr>
+                            <tr th:each="post : ${recentPosts}" style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 12px 8px; text-align: center;">
+                                    <span class="badge" style="background: var(--bg-color); color: var(--text-secondary);" th:text="${post.serverType.description}"></span>
+                                </td>
+                                <td style="padding: 12px 8px; text-align: center;">
+                                    <span class="badge" style="background: var(--brand-light); color: var(--brand-primary);" th:text="${post.category.description}"></span>
+                                </td>
+                                <td style="padding: 12px 8px;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span th:if="${post.tradeStatus.name() == 'SOLD'}" class="badge" style="background: #333; color: #888; font-size: 0.7rem;">완료</span>
+                                        <a th:href="@{/board/detail/{id}(id=${post.id})}" style="font-weight: 600;" class="text-unique">
+                                            <span th:text="${post.itemName}"></span>
+                                        </a>
+                                    </div>
+                                </td>
+                                <td class="text-center text-rune" style="padding: 12px 8px; font-weight: 700;">
+                                    <span th:if="${post.currencyName != null and !post.currencyName.isEmpty()}" th:text="${post.currencyName}"></span>
+                                    <span th:text="${post.currencyType.description}"></span>
+                                    <span th:text="${post.priceAmount}"></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div style="text-align:right; margin-top:20px;">
+                        <a href="/board/list" class="btn btn-secondary" style="font-size:0.9rem; padding:10px 20px;">전체 거래소 보기 &rarr;</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 오른쪽: 공포의 영역 정보 (30%) -->
+            <div class="home-tz-panel">
+                <!-- 다음 공포의 영역 -->
+                <div class="glassmorphism" style="padding: 24px; border-left: 4px solid var(--brand-primary); background: linear-gradient(145deg, var(--panel-bg), rgba(199, 179, 119, 0.05));">
+                    <h3 style="margin-bottom: 12px; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 1.2rem;">🔮</span> 다음 공포의 영역
+                    </h3>
+                    <div id="next-tz-name" style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); line-height: 1.4; font-family: 'Cinzel', serif; margin-bottom: 10px;">
+                        로딩 중...
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; padding-top: 10px; border-top: 1px solid var(--border-color);">
+                        <span style="font-size: 0.75rem; color: var(--text-tertiary); font-weight: 600; text-transform: uppercase;">변경까지</span>
+                        <span id="next-tz-countdown" style="font-size: 1rem; font-weight: 700; color: var(--brand-primary); font-variant-numeric: tabular-nums; letter-spacing: 0.5px;">--:--:--</span>
+                    </div>
+                </div>
+
+                <!-- 현재 공포의 영역 -->
+                <div class="glassmorphism" style="padding: 24px; border-left: 4px solid var(--d2-red); background: linear-gradient(145deg, var(--panel-bg), rgba(248, 81, 73, 0.05));">
+                    <h3 style="margin-bottom: 12px; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 1.2rem;">🔥</span> 현재 공포의 영역
+                    </h3>
+                    <div id="current-tz-name" class="tz-current-name" style="font-size: 1.4rem; font-weight: 800; color: var(--d2-red); line-height: 1.4; font-family: 'Cinzel', serif; margin-bottom: 16px;">
+                        로딩 중...
+                    </div>
+                    
+                    <div style="padding-top: 16px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                        <div style="font-size: 0.75rem; color: var(--text-tertiary); font-weight: 600; text-transform: uppercase;">KST Korea</div>
+                        <div id="kst-time" style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; letter-spacing: 0.5px;">
+                            00:00:00
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script th:inline="javascript">
+        // KST 시계
+        function updateTime() {
+            const now = new Date();
+            const formatter = new Intl.DateTimeFormat('ko-KR', {
+                timeZone: 'Asia/Seoul',
+                hour: '2-digit', minute: '2-digit', second: '2-digit',
+                hour12: false
+            });
+            document.getElementById('kst-time').textContent = formatter.format(now);
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // 자정 기준 30분 단위 → 다음 변경 시각 계산
+        function getNextTzChangeTime() {
+            const nowSeoul = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+            const totalMins = nowSeoul.getHours() * 60 + nowSeoul.getMinutes();
+            const nextSlotMins = (Math.floor(totalMins / 30) + 1) * 30;
+            const nextHour = Math.floor(nextSlotMins / 60) % 24;
+            const nextMin = nextSlotMins % 60;
+
+            const nextChange = new Date(nowSeoul);
+            nextChange.setHours(nextHour, nextMin, 0, 0);
+            // 자정 넘는 경우 다음날
+            if (nextChange <= nowSeoul) {
+                nextChange.setDate(nextChange.getDate() + 1);
+                nextChange.setHours(0, 0, 0, 0);
+            }
+            return nextChange;
+        }
+
+        function updateCountdown() {
+            const nowSeoul = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+            const diff = Math.max(0, Math.floor((getNextTzChangeTime() - nowSeoul) / 1000));
+            const h = String(Math.floor(diff / 3600)).padStart(2, '0');
+            const m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+            const s = String(diff % 60).padStart(2, '0');
+            document.getElementById('next-tz-countdown').textContent = `${h}:${m}:${s}`;
+        }
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+        // 공포의 영역 API 호출
+        async function fetchTerrorZones() {
+            try {
+                const response = await fetch('/api/terror-zone');
+                if (!response.ok) throw new Error('API fetching failed');
+                const data = await response.json();
+                
+                const currentName = data.currentTerrorZone?.zone || '정보 없음';
+                const nextName = data.nextTerrorZone?.zone || '정보 없음';
+                
+                document.getElementById('current-tz-name').textContent = currentName;
+                document.getElementById('next-tz-name').textContent = nextName;
+                
+            } catch (error) {
+                console.error("Terror Zone Fetch Error:", error);
+                document.getElementById('current-tz-name').textContent = '데이터를 불러올 수 없습니다';
+                document.getElementById('next-tz-name').textContent = '데이터를 불러올 수 없습니다';
+            }
+        }
+        fetchTerrorZones();
+        // 10분마다 갱신
+        setInterval(fetchTerrorZones, 600000);
+    </script>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${post.title} + ' - 게시판'">게시판</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="container">
+        <article class="post-detail glassmorphism" style="border: none; padding: 0; overflow: hidden;">
+            <div class="post-header" style="text-align: center; padding: 48px 24px;">
+                <p style="color: var(--brand-primary); font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px;">
+                    [<span th:text="${post.serverType.description}"></span>] <span th:text="${post.category.description}"></span>
+                </p>
+                <h1 th:text="${post.itemName}" class="text-unique" style="font-size: 2.8rem; font-family: 'Cinzel', serif; margin-bottom: 8px;"></h1>
+                <p th:text="${post.title}" style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 32px;"></p>
+                
+                <div class="glassmorphism" style="max-width: 500px; margin: 0 auto 32px; padding: 24px; border: 1px solid var(--brand-primary); background: rgba(199, 178, 119, 0.03);">
+                    <h3 style="color: var(--text-primary); font-size: 1.2rem; margin-bottom: 8px;">거래 요구 사양</h3>
+                    <div class="text-rune" style="font-size: 1.8rem; font-weight: 800;">
+                        <span th:if="${post.currencyName != null and !post.currencyName.isEmpty()}" th:text="${post.currencyName}"></span>
+                        <span th:text="${post.currencyType.description}"></span>
+                        <span th:text="${post.priceAmount}"></span>
+                    </div>
+                    <p style="margin-top: 12px; font-weight: 700; font-size: 0.95rem;" th:style="${post.tradeStatus.name() == 'SOLD' ? 'color: var(--text-tertiary);' : 'color: var(--d2-set);'}">
+                        상태: <span th:text="${post.tradeStatus.description}"></span>
+                    </p>
+                </div>
+
+                <div class="post-meta" style="display: flex; justify-content: center; gap: 24px; color: var(--text-tertiary); font-size: 0.9rem;">
+                    <span>작성자: <strong th:text="${post.author.username}" style="color: var(--text-primary);"></strong></span>
+                    <span>작성일: <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}"></span></span>
+                    <span>조회수: <span th:text="${post.viewCount}"></span></span>
+                </div>
+            </div>
+
+            <div class="post-content">
+                <p th:text="${post.content}" style="white-space: pre-wrap;"></p>
+            </div>
+
+            <div class="post-actions">
+                <a href="/board/list" class="btn btn-secondary">목록</a>
+                <div th:if="${isAuthor}">
+                    <a th:href="@{/board/edit/{id}(id=${post.id})}" class="btn btn-primary">수정</a>
+                    <form id="delete-form" th:action="@{/board/delete/{id}(id=${post.id})}" method="post" style="display: none;"></form>
+                    <a href="javascript:void(0)" class="btn btn-danger" onclick="if(confirm('정말 삭제하시겠습니까?')) document.getElementById('delete-form').submit();">삭제</a>
+                </div>
+            </div>
+            <!-- 거래 제안 (댓글) 영역 -->
+            <div class="comments-section" style="padding: 48px 30px; border-top: 1px solid var(--border-color); background: rgba(0,0,0,0.1);">
+                <h3 style="color: var(--brand-primary); margin-bottom: 24px; font-family: 'Cinzel', serif;">거래 제안 및 문의 (<span th:text="${#lists.size(post.comments)}"></span>)</h3>
+                
+                <div th:each="comment : ${post.comments}" style="background: var(--panel-bg); padding: 20px; margin-bottom: 16px; border-radius: 12px; border: 1px solid var(--border-color); border-left: 4px solid var(--brand-primary); box-shadow: var(--shadow-subtle);">
+                    <div style="display:flex; justify-content: space-between; margin-bottom: 12px;">
+                        <strong th:text="${comment.author.username}" style="color: var(--text-primary); font-size: 1rem;"></strong>
+                        <span style="color: var(--text-tertiary); font-size: 0.8rem;" th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+                    </div>
+                    <p th:text="${comment.content}" style="white-space: pre-wrap; font-size: 1rem; color: var(--text-primary); margin-bottom: 12px;"></p>
+                    
+                    <form th:if="${#authorization.expression('isAuthenticated()') and #authentication.name == comment.author.username}" 
+                          th:action="@{/board/detail/{postId}/comment/{commentId}/delete(postId=${post.id}, commentId=${comment.id})}" 
+                          method="post" style="text-align: right;">
+                        <button type="submit" class="btn-link" style="color: var(--d2-red); font-size: 0.8rem; background: none; border: none; cursor: pointer; text-decoration: underline; font-family: inherit;" onclick="return confirm('제안을 삭제하시겠습니까?');">삭제</button>
+                    </form>
+                </div>
+                
+                <div sec:authorize="isAuthenticated()" style="margin-top: 32px;">
+                    <form th:action="@{/board/detail/{id}/comment(id=${post.id})}" method="post">
+                        <textarea name="content" rows="4" placeholder="가격 제안이나 문의사항을 남겨주세요." style="width:100%; padding:20px; background: var(--bg-color); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 12px; resize: vertical; font-family: inherit; font-size: 1rem;" required></textarea>
+                        <div style="text-align: right; margin-top: 16px;">
+                            <button type="submit" class="btn btn-primary" style="padding: 12px 32px;">제안 등록</button>
+                        </div>
+                    </form>
+                </div>
+                <div sec:authorize="isAnonymous()" style="margin-top: 32px; padding: 24px; background: var(--bg-color); text-align: center; border: 1px solid var(--border-color); border-radius: 12px;">
+                    거래 제안을 작성하려면 <a href="/auth/login" style="color: var(--brand-primary); text-decoration: underline; font-weight: 600;">로그인</a>이 필요합니다.
+                </div>
+            </div>
+
+        </article>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+
+</html>

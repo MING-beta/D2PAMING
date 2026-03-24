@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>아이템 판매 등록 - D2 TRADER</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="container">
+        <div class="form-container glassmorphism" style="border:none; padding: 48px; max-width: 800px; margin: 40px auto;">
+            <h2 style="font-family: 'Cinzel', serif; color: var(--brand-primary); margin-bottom: 32px; font-size: 2rem; text-align: center;">아이템 판매 등록</h2>
+
+            <form th:action="@{/board/create}" th:object="${postForm}" method="post">
+                <div class="form-group" style="display:flex; gap:10px;">
+                    <div style="flex:1;">
+                        <label for="serverType">서버</label>
+                        <select id="serverType" th:field="*{serverType}">
+                            <option th:each="server : ${servers}" th:value="${server}" th:text="${server.description}"></option>
+                        </select>
+                    </div>
+                    <div style="flex:1;">
+                        <label for="category">카테고리</label>
+                        <select id="category" th:field="*{category}">
+                            <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat.description}"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="itemName">아이템 이름 (예: 샤코, 자룬, 수수께끼)</label>
+                    <input type="text" id="itemName" th:field="*{itemName}">
+                    <span class="error" th:if="${#fields.hasErrors('itemName')}" th:errors="*{itemName}"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="title">글 제목</label>
+                    <input type="text" id="title" th:field="*{title}" placeholder="예: [판매] 묻지마 샤코 팝니다">
+                    <span class="error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></span>
+                </div>
+
+                <div class="form-group" style="display:flex; gap:10px;">
+                    <div style="flex:1;">
+                        <label for="currencyType">요구 화폐</label>
+                        <select id="currencyType" th:field="*{currencyType}">
+                            <option th:each="curr : ${currencies}" th:value="${curr}" th:text="${curr.description}"></option>
+                        </select>
+                    </div>
+                    <div style="flex:1;">
+                        <label for="currencyName">상세 화폐명 (예: 베르)</label>
+                        <input type="text" id="currencyName" th:field="*{currencyName}" placeholder="CP 거래시 공란">
+                    </div>
+                    <div style="flex:1;">
+                        <label for="priceAmount">수량 (개/CP)</label>
+                        <input type="number" id="priceAmount" th:field="*{priceAmount}" min="1">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="content">추가 설명 (변동 옵션, 거래 가능 시간 등)</label>
+                    <textarea id="content" th:field="*{content}" rows="10"></textarea>
+                    <span class="error" th:if="${#fields.hasErrors('content')}" th:errors="*{content}"></span>
+                </div>
+
+                <div class="form-actions">
+                    <a href="/board/list" class="btn btn-secondary">취소</a>
+                    <button type="submit" class="btn btn-primary">등록</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

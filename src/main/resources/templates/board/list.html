@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시판</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="container">
+        <div class="board-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+            <h2 style="font-size: 1.6rem; font-weight: 700; color: var(--text-primary); margin: 0;">아이템 마켓</h2>
+            <a sec:authorize="isAuthenticated()" href="/board/create" class="btn btn-primary">판매 등록</a>
+        </div>
+
+        <div class="glassmorphism" style="padding: 24px; margin-bottom: 32px;">
+            <form action="/board/list" method="get" style="display:flex; gap:16px; align-items: flex-end; flex-wrap: wrap;">
+                <div style="flex:1; min-width: 150px;">
+                    <label style="color:var(--text-secondary); font-size:0.85rem; font-weight:700; display:block; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">서버</label>
+                    <select name="server" class="form-control" style="width:100%; padding:14px; background:var(--bg-color); color:var(--text-primary); border:1px solid var(--border-color); border-radius:12px; height:52px; font-family:inherit;">
+                        <option value="">전체 서버</option>
+                        <option th:each="s : ${servers}" th:value="${s}" th:text="${s.description}" th:selected="${s == selectedServer}"></option>
+                    </select>
+                </div>
+                <div style="flex:1; min-width: 150px;">
+                    <label style="color:var(--text-secondary); font-size:0.85rem; font-weight:700; display:block; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">분류</label>
+                    <select name="category" class="form-control" style="width:100%; padding:14px; background:var(--bg-color); color:var(--text-primary); border:1px solid var(--border-color); border-radius:12px; height:52px; font-family:inherit;">
+                        <option value="">전체 분류</option>
+                        <option th:each="c : ${categories}" th:value="${c}" th:text="${c.description}" th:selected="${c == selectedCategory}"></option>
+                    </select>
+                </div>
+                <div style="flex:3; min-width: 250px;">
+                    <label style="color:var(--text-secondary); font-size:0.85rem; font-weight:700; display:block; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">아이템명 / 제목 검색</label>
+                    <input type="text" name="keyword" th:value="${keyword}" placeholder="어떤 아이템을 찾으시나요?" class="form-control" style="width:100%; padding:14px 16px; background:var(--bg-color); color:var(--text-primary); border:1px solid var(--border-color); border-radius:12px; height: 52px; box-sizing: border-box; font-family:inherit;">
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary" style="padding:0 40px; height:52px; border-radius:12px;">검색</button>
+                </div>
+            </form>
+        </div>
+
+        <div th:if="${#lists.isEmpty(posts)}" class="glassmorphism" style="padding: 60px 0; text-align: center; color: var(--text-tertiary); font-weight: 500;">
+            조건에 맞는 아이템 게시글이 없습니다.
+        </div>
+
+        <div th:unless="${#lists.isEmpty(posts)}" class="item-grid">
+            <a th:each="post : ${posts}" th:href="@{/board/detail/{id}(id=${post.id})}" class="item-card">
+                
+                <div th:if="${post.tradeStatus.name() == 'SOLD'}" class="item-status sold">거래완료</div>
+                
+                <div class="item-card-top">
+                    <!-- Image Placeholder -->
+                    <div class="item-image">
+                        <span class="item-image-placeholder">No<br>Image</span>
+                    </div>
+                    
+                    <div class="item-info">
+                        <div class="item-tags">
+                            <span class="badge badge-server" th:text="${post.serverType.description}"></span>
+                            <span class="badge badge-category" th:text="${post.category.description}"></span>
+                        </div>
+                        <div class="item-title-row">
+                            <span class="item-name text-unique" th:text="${post.itemName}">안다리엘의 두개골 데몬헤드</span>
+                            <span class="item-subtitle" th:text="${post.title}">방상 130 / 힘 30 / 피흡 10 급처</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="item-card-bottom">
+                    <div class="item-price">
+                        <span class="item-price-label">Trading For</span>
+                        <span class="item-price-value text-rune">
+                            <span th:if="${post.currencyName != null and !post.currencyName.isEmpty()}" th:text="${post.currencyName}">자 룬</span>
+                            <span th:if="${post.currencyName == null or post.currencyName.isEmpty()}" th:text="${post.currencyType.description}"></span>
+                            <span th:text="${post.priceAmount}">1</span>
+                        </span>
+                    </div>
+                    <div class="item-seller">
+                        <span class="item-seller-name" th:text="${post.author.username}">ikiss78</span>
+                        <span class="item-date" th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">3초 전</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+
+</html>

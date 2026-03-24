@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 / 회원가입 - 게시판</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .auth-tabs { display: flex; border-bottom: 2px solid var(--d2-border); margin-bottom: 20px; }
+        .auth-tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; color: var(--d2-text); font-weight: bold; }
+        .auth-tab.active { border-bottom: 2px solid var(--d2-gold); color: var(--d2-gold); background: rgba(0,0,0,0.3); }
+        .auth-panel { display: none; }
+        .auth-panel.active { display: block; }
+    </style>
+</head>
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="container">
+        <div class="form-container glassmorphism">
+            <div class="auth-tabs">
+                <div class="auth-tab active" id="tab-login" onclick="switchTab('login')">로그인</div>
+                <div class="auth-tab" id="tab-signup" onclick="switchTab('signup')">회원가입</div>
+            </div>
+
+            <!-- 로그인 폼 -->
+            <div id="panel-login" class="auth-panel active">
+                <h2 style="display:none;">로그인</h2>
+                <div th:if="${param.error}" class="alert alert-error">
+                    아이디 또는 비밀번호가 올바르지 않습니다.
+                </div>
+                <div th:if="${param.signup}" class="alert alert-success">
+                    회원가입이 완료되었습니다. 로그인해주세요.
+                </div>
+
+                <form th:action="@{/auth/login}" method="post">
+                    <div class="form-group">
+                        <label for="login_username">아이디</label>
+                        <input type="text" id="login_username" name="username" required autofocus>
+                    </div>
+                    <div class="form-group">
+                        <label for="login_password">비밀번호</label>
+                        <input type="password" id="login_password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">로그인</button>
+                </form>
+            </div>
+
+            <!-- 회원가입 폼 -->
+            <div id="panel-signup" class="auth-panel">
+                <h2 style="display:none;">회원가입</h2>
+                <form th:action="@{/auth/signup}" th:object="${signupForm}" method="post">
+                    <div class="form-group">
+                        <label for="username">아이디</label>
+                        <input type="text" id="username" th:field="*{username}">
+                        <span class="error" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">비밀번호</label>
+                        <input type="password" id="password" th:field="*{password}">
+                        <span class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="passwordConfirm">비밀번호 확인</label>
+                        <input type="password" id="passwordConfirm" th:field="*{passwordConfirm}">
+                        <span class="error" th:if="${#fields.hasErrors('passwordConfirm')}"
+                            th:errors="*{passwordConfirm}"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">회원가입</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <script th:inline="javascript">
+        function switchTab(tabId) {
+            document.getElementById('tab-login').classList.remove('active');
+            document.getElementById('tab-signup').classList.remove('active');
+            document.getElementById('panel-login').classList.remove('active');
+            document.getElementById('panel-signup').classList.remove('active');
+            
+            document.getElementById('tab-' + tabId).classList.add('active');
+            document.getElementById('panel-' + tabId).classList.add('active');
+        }
+
+        // Binding 에러가 있으면(회원가입 도중 에러) 자동으로 회원가입 탭 열기
+        /*<![CDATA[*/
+        var hasErrors = /*[[${#fields.hasErrors('${signupForm.*}')}]]*/ false;
+        if (hasErrors) {
+            switchTab('signup');
+        }
+        /*]]>*/
+    </script>
+</body>
+</html>
