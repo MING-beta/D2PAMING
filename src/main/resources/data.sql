@@ -8,4 +8,4 @@ INSERT INTO member (username, password, created_at) VALUES
 INSERT INTO post (title, content, view_count, member_id, created_at, updated_at, server_type, category, item_name, currency_type, currency_name, price_amount, trade_status) VALUES
 ('[판매] 샤코 팝니다', '가장 저렴하게 팝니다. 쪽지주세요.', 0, 1, NOW(), NOW(), 'LADDER', 'ARMOR', '할리퀸 크레스트 (샤코)', 'RUNE', '자', 1, 'SELLING'),
 ('[구매] 묻지마 수수께끼 삽니다', '룬 많습니다. 바로 거래 가능', 5, 2, NOW(), NOW(), 'STANDARD', 'ARMOR', '수수께끼', 'RUNE', '베르', 2, 'SELLING'),
-('[나눔] 초보용 세트 템 나눔', '방 잡고 기다립니다.', 3, 3, NOW(), NOW(), 'LADDER', 'ETC', '초보용 템', 'CP', '', 0, 'SOLD');
+('[나눔] 초보용 세트 템 나눔', '방 잡고 기다립니다.', 3, 3, NOW(), NOW(), 'LADDER', 'ETC', '초보용 템', 'DP', '', 0, 'SOLD');
