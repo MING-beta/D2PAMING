@@ -13,6 +13,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.security.Principal;
 
@@ -22,21 +26,30 @@ public class BoardController {
 
     private final PostService postService;
     private final MemberService memberService;
+    private final com.example.board.service.ItemImageService itemImageService;
 
-    public BoardController(PostService postService, MemberService memberService) {
+    public BoardController(PostService postService, MemberService memberService, com.example.board.service.ItemImageService itemImageService) {
         this.postService = postService;
         this.memberService = memberService;
+        this.itemImageService = itemImageService;
     }
 
-    // 게시판 목록 (서치 및 필터 지원)
+    // 게시판 목록 (서치 및 필터 지원 및 페이지네이션)
     @GetMapping("/list")
     public String list(@RequestParam(required = false) ServerType server,
                        @RequestParam(required = false) Category category,
                        @RequestParam(required = false) String keyword,
+                       @RequestParam(defaultValue = "0") int page,
                        Model model) {
         
         String cleanKeyword = (keyword != null && !keyword.trim().isEmpty()) ? keyword.trim() : null;
-        model.addAttribute("posts", postService.search(server, category, cleanKeyword));
+        Pageable pageable = PageRequest.of(page, 15, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Post> postsPage = postService.search(server, category, cleanKeyword, pageable);
+        
+        model.addAttribute("postsPage", postsPage);
+        model.addAttribute("posts", postsPage.getContent());
+        model.addAttribute("totalPages", postsPage.getTotalPages());
+        model.addAttribute("currentPage", page);
         
         // 필터 유지를 위한 속성
         model.addAttribute("servers", ServerType.values());
@@ -70,6 +83,7 @@ public class BoardController {
         model.addAttribute("servers", ServerType.values());
         model.addAttribute("categories", Category.values());
         model.addAttribute("currencies", CurrencyType.values());
+        model.addAttribute("itemNames", itemImageService.getAllMappedItemNames());
         return "board/create";
     }
 
@@ -113,6 +127,7 @@ public class BoardController {
         model.addAttribute("servers", ServerType.values());
         model.addAttribute("categories", Category.values());
         model.addAttribute("currencies", CurrencyType.values());
+        model.addAttribute("itemNames", itemImageService.getAllMappedItemNames());
 
         return "board/edit";
     }

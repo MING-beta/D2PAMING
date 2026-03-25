@@ -154,4 +154,5 @@ public class Post {
 
     public TradeStatus getTradeStatus() { return tradeStatus; }
     public void setTradeStatus(TradeStatus tradeStatus) { this.tradeStatus = tradeStatus; }
+
 }

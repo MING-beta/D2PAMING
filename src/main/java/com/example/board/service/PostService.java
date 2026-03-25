@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 @Service
 @Transactional
 public class PostService {
@@ -22,16 +24,16 @@ public class PostService {
         this.postRepository = postRepository;
     }
 
-    // 전체 게시글 검색 및 필터링 조회
+    // 전체 게시글 검색 및 필터링 조회 (페이지네이션 적용)
     @Transactional(readOnly = true)
-    public List<Post> search(ServerType server, Category category, String keyword) {
-        return postRepository.searchPosts(server, category, keyword);
+    public Page<Post> search(ServerType server, Category category, String keyword, Pageable pageable) {
+        return postRepository.searchPosts(server, category, keyword, pageable);
     }
 
-    // 최근 등록글 5개 조회
+    // 최근 등록글 100개 조회
     @Transactional(readOnly = true)
     public List<Post> getRecentPosts() {
-        return postRepository.findTop5ByOrderByCreatedAtDesc();
+        return postRepository.findTop100ByOrderByCreatedAtDesc();
     }
 
     // 게시글 단건 조회 (작성자 정보 포함)
