@@ -7,68 +7,148 @@
     <title>D2PAMING - 디아블로2 리저렉션 커뮤니티 &amp; 거래소</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <style>
+        /* 토글 버튼 스타일 */
+        .uber-toggle-group {
+            display: flex;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            flex-direction: row;
+            white-space: nowrap;
+        }
+        .uber-toggle-btn {
+            padding: 4px 6px;
+            font-size: 0.55rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-tertiary);
+            border: none;
+            background: transparent;
+            font-weight: 700;
+        }
         .home-layout {
             display: flex;
-            gap: 24px;
-            flex-wrap: wrap;
-            margin-top: 24px;
+            gap: 20px;
+            flex-wrap: nowrap;
+            margin-top: 8px;
             align-items: stretch;
+            width: 100%;
+            height: 720px; /* 고해상도 대시보드: 모든 정보가 잘림 없이 완벽히 노출되도록 확장 */
+            box-sizing: border-box;
+        }
+
+        .home-uber-panel {
+            flex: 1.0;
+            min-width: 250px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
         .home-posts-panel {
-            flex: 7;
-            min-width: 280px;
+            flex: 2.6;
+            min-width: 0;
             display: flex;
             flex-direction: column;
-            height: 540px;
+            height: 100%;
         }
 
-        .home-tz-panel {
-            flex: 3;
-            min-width: 260px;
+        .side-content {
+            flex: 1.3;
+            min-width: 320px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            height: 540px;
+            gap: 15px;
+            height: 100%;
         }
 
-        .tz-panel-card {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        @media (max-width: 640px) {
+        /* 반응형: 데스크탑/태블릿 중간 단계 */
+        @media (max-width: 1280px) {
             .home-layout {
+                flex-wrap: wrap;
+                height: auto;
+            }
+            .home-uber-panel {
+                flex: 1 1 30%;
+                height: 560px;
+            }
+            .home-posts-panel {
+                flex: 1 1 60%;
+                height: 560px;
+            }
+            .side-content {
+                flex: 1 1 100%;
+                max-width: 100%;
+                height: auto;
+                flex-direction: row; /* 하단 2열 배치 */
+            }
+            .side-content > div {
+                flex: 1;
+            }
+        }
+
+        /* 반응형: 모바일 스택 */
+        @media (max-width: 768px) {
+            .home-layout {
+                flex-direction: column;
+                gap: 15px;
+                height: auto;
+                padding: 0 10px;
+            }
+
+            .home-uber-panel, .home-posts-panel, .side-content {
+                flex: none;
+                width: 100% !important;
+                min-width: 100% !important;
+                height: auto !important;
+                max-width: 100% !important;
+            }
+            
+            .side-content {
                 flex-direction: column;
             }
 
-            .home-posts-panel,
-            .home-tz-panel {
-                flex: none;
-                min-width: 100%;
+            .glassmorphism {
+                margin: 0 !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                padding: 15px !important;
             }
 
-            .home-layout h2 {
-                font-size: 1.1rem !important;
-            }
-
-            .tz-current-name {
+            .home-layout h2, .home-layout h3 {
                 font-size: 1.1rem !important;
             }
         }
 
         /* Hide scrollbar for recent posts container */
-        #recent-posts-container::-webkit-scrollbar {
-            display: none;
+        #recent-posts-container::-webkit-scrollbar,
+        #tz-history-container::-webkit-scrollbar {
+            width: 5px; /* 아주 얇게 */
         }
 
-        #recent-posts-container {
-            -ms-overflow-style: none;
-            /* IE and Edge */
-            scrollbar-width: none;
-            /* Firefox */
+        #recent-posts-container::-webkit-scrollbar-track,
+        #tz-history-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #recent-posts-container::-webkit-scrollbar-thumb,
+        #tz-history-container::-webkit-scrollbar-thumb {
+            background: rgba(199, 179, 119, 0.2); /* 브랜드 색상 투명도 적용 */
+            border-radius: 10px;
+        }
+
+        #recent-posts-container::-webkit-scrollbar-thumb:hover,
+        #tz-history-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(199, 179, 119, 0.4);
+        }
+
+        #recent-posts-container,
+        #tz-history-container {
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: thin; /* Firefox */
+            scrollbar-color: rgba(199, 179, 119, 0.2) transparent;
         }
     </style>
 </head>
@@ -78,7 +158,30 @@
 
     <main class="container">
         <div class="home-layout">
-            <!-- 왼쪽: 매물 리스트 (70%) -->
+            <!-- 왼쪽: 우버디아 현황판 (Refined Header & Flat Content) -->
+            <div class="home-uber-panel">
+                <div class="glassmorphism" style="padding: 18px; border-top: 3px solid var(--d2-red); border-radius: 16px; height: 100%; display: flex; flex-direction: column; box-sizing: border-box;">
+                    <div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; flex-shrink: 0;">
+                        <h3 style="margin: 0; font-size: 1.1rem; color: var(--d2-red); font-family: 'Cinzel', serif; display: flex; align-items: center; gap: 8px; white-space: nowrap;">
+                            <span style="font-size: 1.3rem; filter: drop-shadow(0 0 5px var(--d2-red));">😈</span> Uber Diablo
+                        </h3>
+                        <!-- 토글 그룹 추가 -->
+                        <div class="uber-toggle-group" id="uber-data-toggle" style="align-self: flex-start;">
+                            <button class="uber-toggle-btn active" onclick="setUberFilter('dlc')">DLC(악마술사의 군림)</button>
+                            <button class="uber-toggle-btn" onclick="setUberFilter('exp')">확장팩</button>
+                        </div>
+                    </div>
+                    
+                    <div id="uber-diablo-container" style="flex: 1; display: flex; flex-direction: column; gap: 4px; overflow: hidden;">
+                        <!-- Loading State -->
+                        <div style="text-align: center; padding: 20px; color: var(--text-tertiary); font-size: 0.8rem;">
+                            징조 감지 중...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 중앙: 매물 리스트 (영역 축소 및 이동) -->
             <div class="home-posts-panel">
                 <div class="glassmorphism"
                     style="padding: 24px; display: flex; flex-direction: column; height: 100%; box-sizing: border-box;">
@@ -153,49 +256,60 @@
                 </div>
             </div>
 
-            <!-- 오른쪽: 공포의 영역 정보 (30%) -->
-            <div class="home-tz-panel">
-                <!-- 다음 공포의 영역 -->
-                <div class="glassmorphism tz-panel-card"
-                    style="padding: 24px; border-left: 4px solid var(--brand-primary); background: linear-gradient(145deg, var(--panel-bg), rgba(199, 179, 119, 0.05));">
-                    <h3
-                        style="margin-bottom: 12px; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 1.2rem;">🔮</span> 다음 공포의 영역
-                    </h3>
-                    <div id="next-tz-name"
-                        style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); line-height: 1.4; font-family: 'Cinzel', serif; margin-bottom: 10px;">
-                        로딩 중...
+                       <!-- 우측 사이드바: 공포의 영역 정보 및 이력 -->
+            <div class="side-content"
+                style="display: flex; flex-direction: column; gap: 15px; flex: 1.3; max-width: 420px; min-width: 320px; height: 100%; box-sizing: border-box;">
+                
+                <div style="display: grid; grid-template-columns: 1fr; gap: 10px; flex-shrink: 0;">
+                    <!-- 다음 공포의 영역 (Compact) -->
+                    <div class="glassmorphism"
+                        style="padding: 12px 18px; border-left: 3px solid var(--brand-primary); background: rgba(0,0,0,0.3); border-radius: 12px; position: relative; overflow: hidden;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <h3 style="margin: 0; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-tertiary); display: flex; align-items: center; gap: 6px;">
+                                <span style="font-size: 0.9rem;">🔮</span> NEXT
+                            </h3>
+                            <div style="font-size: 0.8rem; font-weight: 700; color: var(--brand-primary); background: rgba(199,179,119,0.1); padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(199,179,119,0.2);">
+                                <span id="next-tz-countdown">--:--:--</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                            <div id="next-tz-name" style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary); line-height: 1.3; font-family: 'Cinzel', serif;">로딩 중...</div>
+                            <div id="next-tz-badges" style="display: flex; gap: 4px; margin-bottom: 2px; flex-shrink: 0; white-space: nowrap;"></div>
+                        </div>
                     </div>
-                    <div
-                        style="display: flex; align-items: center; gap: 8px; padding-top: 10px; border-top: 1px solid var(--border-color);">
-                        <span
-                            style="font-size: 0.75rem; color: var(--text-tertiary); font-weight: 600; text-transform: uppercase;">변경까지</span>
-                        <span id="next-tz-countdown"
-                            style="font-size: 1rem; font-weight: 700; color: var(--brand-primary); font-variant-numeric: tabular-nums; letter-spacing: 0.5px;">--:--:--</span>
+
+                    <!-- 현재 공포의 영역 (Compact) -->
+                    <div class="glassmorphism"
+                        style="padding: 12px 18px; border-left: 3px solid var(--d2-red); background: rgba(248, 81, 73, 0.03); border-radius: 12px; position: relative; overflow: hidden;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <h3 style="margin: 0; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-tertiary); display: flex; align-items: center; gap: 6px;">
+                                <span style="font-size: 0.9rem;">🔥</span> NOW
+                            </h3>
+                            <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); background: rgba(255,255,255,0.05); padding: 1px 6px; border-radius: 4px;">
+                                <span id="kst-time">00:00:00</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                            <div id="current-tz-name" style="font-size: 1.2rem; font-weight: 700; color: var(--d2-red); line-height: 1.3; font-family: 'Cinzel', serif;">로딩 중...</div>
+                            <div id="current-tz-badges" style="display: flex; gap: 4px; margin-bottom: 2px; flex-shrink: 0; white-space: nowrap;"></div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- 현재 공포의 영역 -->
-                <div class="glassmorphism tz-panel-card"
-                    style="padding: 24px; border-left: 4px solid var(--d2-red); background: linear-gradient(145deg, var(--panel-bg), rgba(248, 81, 73, 0.05));">
-                    <h3
-                        style="margin-bottom: 12px; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 1.2rem;">🔥</span> 현재 공포의 영역
-                    </h3>
-                    <div id="current-tz-name" class="tz-current-name"
-                        style="font-size: 1.4rem; font-weight: 800; color: var(--d2-red); line-height: 1.4; font-family: 'Cinzel', serif; margin-bottom: 16px;">
-                        로딩 중...
+                <!-- 공포의 영역 이력 (타임라인 - 높이 비중 확대) -->
+                <div class="glassmorphism"
+                    style="padding: 20px; border-top: 2px solid var(--brand-primary); flex: 1; min-height: 0; display: flex; flex-direction: column; border-radius: 16px; overflow: hidden;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-shrink: 0;">
+                        <h3 style="margin: 0; font-size: 0.95rem; color: var(--brand-primary); font-family: 'Cinzel', serif; display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 1.1rem;">📜</span> TZ Timeline
+                        </h3>
+                        <span style="font-size: 0.65rem; color: var(--text-tertiary); font-weight: 600;">HISTORY (30m)</span>
                     </div>
-
-                    <div
-                        style="padding-top: 16px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-                        <div
-                            style="font-size: 0.75rem; color: var(--text-tertiary); font-weight: 600; text-transform: uppercase;">
-                            KST Korea</div>
-                        <div id="kst-time"
-                            style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; letter-spacing: 0.5px;">
-                            00:00:00
-                        </div>
+                    
+                    <div id="tz-history-container" style="flex: 1; overflow-y: auto; padding-right: 8px;">
+                        <ul id="tz-history-list" style="list-style: none; padding: 0; margin: 0;">
+                            <li style="padding: 15px; text-align: center; color: var(--text-tertiary); font-size: 0.9rem;">이력을 불러오는 중입니다...</li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -216,21 +330,14 @@
         setInterval(updateTime, 1000);
         updateTime();
 
-        // 자정 기준 30분 단위 → 다음 변경 시각 계산
+        // 30분 단위 다음 슬롯 계산
         function getNextTzChangeTime() {
             const nowSeoul = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
             const totalMins = nowSeoul.getHours() * 60 + nowSeoul.getMinutes();
             const nextSlotMins = (Math.floor(totalMins / 30) + 1) * 30;
-            const nextHour = Math.floor(nextSlotMins / 60) % 24;
-            const nextMin = nextSlotMins % 60;
-
             const nextChange = new Date(nowSeoul);
-            nextChange.setHours(nextHour, nextMin, 0, 0);
-            // 자정 넘는 경우 다음날
-            if (nextChange <= nowSeoul) {
-                nextChange.setDate(nextChange.getDate() + 1);
-                nextChange.setHours(0, 0, 0, 0);
-            }
+            nextChange.setHours(Math.floor(nextSlotMins / 60) % 24, nextSlotMins % 60, 0, 0);
+            if (nextChange <= nowSeoul) nextChange.setDate(nextChange.getDate() + 1);
             return nextChange;
         }
 
@@ -245,112 +352,350 @@
         setInterval(updateCountdown, 1000);
         updateCountdown();
 
+        const tzTiers = {
+            "Blood Moor and Den of Evil": "FF", "Cold Plains and The Cave": "CD", "Burial Grounds, The Crypt, and The Mausoleum": "FF",
+            "Burial Grounds, Crypt, and Mausoleum": "FF",
+            "Stony Field, Tristram": "FF", "Stony Field": "FF", "Dark Wood and Underground Passage": "CD", "Dark Wood": "CD",
+            "Black Marsh, The Hole, and The Forgotten Tower": "CA", "Black Marsh and The Hole": "CA", "Black Marsh": "CA",
+            "Tal Rasha's Tomb, Tal Rasha's Chamber, and Canyon of the Magi": "SA", "Tal Rasha's Tombs and Tal Rasha's Chamber": "SA", "Tal Rasha's Tombs": "SA",
+            "Lost City, Valley of Snakes, Claw Viper Temple, and Ancient Tunnels": "CC", "Lost City, Valley of Snakes, and Claw Viper Temple": "CC",
+            "Spider Forest, Arachnid Lair, and Spider Cavern": "CB", "Spider Forest and Spider Cavern": "CB",
+            "Jail and Barracks": "BC", "Cathedral, Inner Cloister, and Catacombs": "AS", "Cathedral and Catacombs": "AS",
+            "Tamoe Highland, Pit, Monastery Gate, and Outer Cloister": "AA", "The Pit": "AA", "Tristram": "FF",
+            "Moo Moo Farm": "BS", "Secret Cow Level": "BS", "Sewers": "BC", "Lut Gholein Sewers": "BC",
+            "Rocky Waste and Stony Tomb": "BC", "Dry Hills and Halls of the Dead": "AC", "Far Oasis and Maggot Lair": "FF",
+            "Far Oasis": "FF", "Arcane Sanctuary, Harem, and Palace Cellar": "CA", "Arcane Sanctuary": "CA",
+            "Great Marsh": "CB", "Flayer Jungle, Flayer Dungeon, and Swampy Pit": "AB", "Flayer Jungle and Flayer Dungeon": "AB",
+            "Kurast Bazaar, Kurast Causeway, Kurast Sewers, Ruined Temple, Disused Fane, Forgotten Reliquary, Forgotten Temple, Ruined Fane, and Disused Reliquary": "BB",
+            "Kurast Bazaar, Ruined Temple, and Disused Fane": "BB", "Travincal": "BA", "Durance of Hate": "CA",
+            "Outer Steppes and Plains of Despair": "CC", "River of Flame and City of the Damned": "BB",
+            "City of the Damned and River of Flame": "BB", "Chaos Sanctuary": "SS",
+            "Bloody Foothills, Frigid Highlands, and Abaddon": "BB", "Bloody Foothills, Frigid Highlands and Abaddon": "BB",
+            "Bloody Foothills and Frigid Highlands": "BB", "Arreat Plateau and Pit of Acheron": "BC", "Frozen Tundra and Infernal Pit": "BB",
+            "Frozen Tundra": "BB", "Crystalline Passage and Frozen River": "CC", "Glacial Trail and Drifter Cavern": "CC",
+            "Nihlathak's Temple and Temple Halls": "BA", "Nihlathak's Temple": "BA",
+            "Nihlathak's Temple, Halls of Anguish, Halls of Pain, and Halls of Vaught": "BA",
+            "Ancient's Way and Icy Cellar": "CC", "Worldstone Keep, Throne of Destruction, and Worldstone Chamber": "SS"
+        };
         const tzTranslations = {
-            "Blood Moor and Den of Evil": "[ACT 1] 핏빛 황무지 및 악의 소굴",
-            "Cold Plains and The Cave": "[ACT 1] 차가운 평야 및 동굴",
-            "Burial Grounds, The Crypt, and the Mausoleum": "[ACT 1] 매장지, 묘실, 영묘",
+            "Blood Moor and Den of Evil": "[ACT 1] 핏빛 황무지와 악의 소굴",
+            "Cold Plains and The Cave": "[ACT 1] 차가운 평야와 동굴",
+            "Burial Grounds, The Crypt, and The Mausoleum": "[ACT 1] 매장지, 묘실, 영묘",
+            "Burial Grounds, Crypt, and Mausoleum": "[ACT 1] 매장지, 묘실, 영묘",
+            "Stony Field, Tristram": "[ACT 1] 바위 벌판, 트리스트럼",
             "Stony Field": "[ACT 1] 바위 벌판",
-            "Dark Wood": "[ACT 1] 어둠의 숲",
-            "The Forgotten Tower": "[ACT 1] 잊힌 탑",
-            "Jail": "[ACT 1] 감옥",
-            "Cathedral and Catacombs": "[ACT 1] 대성당 및 지하 묘지",
-            "The Pit": "[ACT 1] 구덩이",
             "Tristram": "[ACT 1] 트리스트럼",
-            "Moo Moo Farm": "[ACT 1] 비밀의 젖소방",
-            "Secret Cow Level": "[ACT 1] 비밀의 젖소방",
-            "Black Marsh": "[ACT 1] 검은 습지",
-            
-            "Sewers": "[ACT 2] 루트골레인",
-            "Lut Gholein Sewers": "[ACT 2] 루트골레인",
-            "Rocky Waste and Stony Tomb": "[ACT 2] 바위 황무지 및 돌무덤",
-            "Dry Hills and Halls of the Dead": "[ACT 2] 메마른 언덕 및 망자의 전당",
-            "Far Oasis": "[ACT 2] 먼 오아시스",
-            "Lost City, Valley of Snakes, and Claw Viper Temple": "[ACT 2] 잊힌 도시, 뱀의 골짜기, 발톱 독사 사원",
-            "Arcane Sanctuary": "[ACT 2] 비전의 성역",
+            "Dark Wood and Underground Passage": "[ACT 1] 어둠의 숲과 지하 통로",
+            "Dark Wood": "[ACT 1] 어둠의 숲과 지하 통로",
+            "Black Marsh, The Hole, and The Forgotten Tower": "[ACT 1] 검은 습지, 구렁, 잊힌 탑",
+            "Black Marsh and The Hole": "[ACT 1] 검은 습지, 구렁, 잊힌 탑",
+            "Black Marsh": "[ACT 1] 검은 습지, 구렁, 잊힌 탑",
+            "Jail and Barracks": "[ACT 1] 감옥과 병영",
+            "Cathedral, Inner Cloister, and Catacombs": "[ACT 1] 대성당, 내부 회랑, 지하 묘지",
+            "Cathedral and Catacombs": "[ACT 1] 대성당, 내부 회랑, 지하 묘지",
+            "Tamoe Highland, Pit, Monastery Gate, and Outer Cloister": "[ACT 1] 타모 고원, 구덩이, 수도원 정문, 외부 회랑",
+            "The Pit": "[ACT 1] 구덩이(피트)",
+            "Lut Gholein Sewers": "[ACT 2] 루트 골레인 하수도",
+            "Rocky Waste and Stony Tomb": "[ACT 2] 바위 투성이 황무지와 돌 무덤",
+            "Dry Hills and Halls of the Dead": "[ACT 2] 메마른 언덕과 죽음의 홀",
+            "Far Oasis and Maggot Lair": "[ACT 2] 먼 Oasis와 구더기 굴",
+            "Lost City, Valley of Snakes, Claw Viper Temple, and Ancient Tunnels": "[ACT 2] 잊힌 도시, 뱀의 골짜기, 발톱 독사 사원, 고대 토굴",
+            "Lost City, Valley of Snakes, and Claw Viper Temple": "[ACT 2] 잊힌 도시, 뱀의 골짜기, 발톱 독사 사원, 고대 토굴",
+            "Arcane Sanctuary, Harem, and Palace Cellar": "[ACT 2] 비전의 성소, 하렘, 궁전 지하",
+            "Arcane Sanctuary": "[ACT 2] 비전의 성소",
+            "Tal Rasha's Tomb, Tal Rasha's Chamber, and Canyon of the Magi": "[ACT 2] 탈 라샤의 무덤, 탈 라샤의 방, 신비술사의 협곡",
+            "Tal Rasha's Tombs and Tal Rasha's Chamber": "[ACT 2] 탈 라샤의 무덤, 탈 라샤의 방, 신비술사의 협곡",
             "Tal Rasha's Tombs": "[ACT 2] 탈 라샤의 무덤",
-
-            "Spider Forest and Spider Cavern": "[ACT 3] 거미 숲 및 거미 동굴",
+            "Spider Forest, Arachnid Lair, and Spider Cavern": "[ACT 3] 거미 숲, 거미 굴, 거미 동굴",
+            "Spider Forest and Spider Cavern": "[ACT 3] 거미 숲, 거미 굴, 거미 동굴",
             "Great Marsh": "[ACT 3] 거대 습지",
-            "Flayer Jungle and Flayer Dungeon": "[ACT 3] 우상족 밀림 및 우상족 던전",
-            "Kurast Bazaar, Ruined Temple, and Disused Fane": "[ACT 3] 쿠라스트 시장, 허물어진 사원, 버려진 성소",
-            "Kurast Sewers": "[ACT 3] 쿠라스트 하수도",
-            "Travincal": "[ACT 3] 트라빈컬",
+            "Flayer Jungle, Flayer Dungeon, and Swampy Pit": "[ACT 3] 기드빈 밀림, 기드빈 던전, 늪지대 구덩이",
+            "Flayer Jungle and Flayer Dungeon": "[ACT 3] 기드빈 밀림과 던전",
+            "Kurast Bazaar, Kurast Causeway, Kurast Sewers, Ruined Temple, Disused Fane, Forgotten Reliquary, Forgotten Temple, Ruined Fane, and Disused Reliquary": "[ACT 3] 쿠라스트 시장, 쿠라스트 둑길, 쿠라스트 하수도",
+            "Kurast Bazaar, Ruined Temple, and Disused Fane": "[ACT 3] 쿠라스트 시장, 쿠라스트 둑길, 쿠라스트 하수도",
+            "Travincal": "[ACT 3] 트라빈칼",
             "Durance of Hate": "[ACT 3] 증오의 억류지",
-
-            "Outer Steppes and Plains of Despair": "[ACT 4] 평원 외곽 및 절망의 평원",
-            "City of the Damned and River of Flame": "[ACT 4] 저주받은 자들의 도시 및 불길의 강",
-            "River of Flame and City of the Damned": "[ACT 4] 불길의 강, 저주받은 자들의 도시",
+            "Outer Steppes and Plains of Despair": "[ACT 4] 평원 외곽과 절망의 평원",
+            "River of Flame and City of the Damned": "[ACT 4] 저주받은 자들의 도시와 불길의 강",
+            "City of the Damned and River of Flame": "[ACT 4] 저주받은 자들의 도시와 불길의 강",
             "Chaos Sanctuary": "[ACT 4] 혼돈의 성역",
-
-            "Bloody Foothills and Frigid Highlands": "[ACT 5] 핏빛 언덕 및 혹한의 고산지",
-            "Bloody Foothills": "[ACT 5] 핏빛 언덕",
-            "Arreat Plateau and Pit of Acheron": "[ACT 5] 아리앗 고원 및 아케론의 구덩이",
-            "Arreat Plateau": "[ACT 5] 아리앗 고원",
-            "Crystalline Passage and Frozen River": "[ACT 5] 수정 동굴 및 얼어붙은 강",
-            "Glacial Trail and Drifter Cavern": "[ACT 5] 빙하의 길 및 표류 동굴",
-            "Nihlathak's Temple": "[ACT 5] 니라트하크의 사원",
-            "Worldstone Keep, Throne of Destruction, and Worldstone Chamber": "[ACT 5] 세계석 성채, 파괴의 왕좌, 세계석 보관실"
+            "Bloody Foothills, Frigid Highlands, and Abaddon": "[ACT 5] 핏빛 언덕, 혹한의 고산지와 나락",
+            "Bloody Foothills, Frigid Highlands and Abaddon": "[ACT 5] 핏빛 언덕, 혹한의 고산지와 나락",
+            "Bloody Foothills and Frigid Highlands": "[ACT 5] 핏빛 언덕과 혹한의 고산지",
+            "Arreat Plateau and Pit of Acheron": "[ACT 5] 아리앗 고원과 아케론의 구덩이",
+            "Frozen Tundra and Infernal Pit": "[ACT 5] 얼어붙은 동토와 지옥의 구덩이",
+            "Frozen Tundra": "[ACT 5] 얼어붙은 동토",
+            "Crystalline Passage and Frozen River": "[ACT 5] 수정 통로와 얼어붙은 강",
+            "Glacial Trail and Drifter Cavern": "[ACT 5] 빙하의 길과 부랑자의 동굴",
+            "Nihlathak's Temple and Temple Halls": "[ACT 5] 니흘라탁의 사원과 사원 전당",
+            "Nihlathak's Temple, Halls of Anguish, Halls of Pain, and Halls of Vaught": "[ACT 5] 니흘라탁의 사원, 고뇌/고통/보트의 전당",
+            "Ancient's Way and Icy Cellar": "[ACT 5] 고대인의 길과 얼음 지하실",
+            "Worldstone Keep, Throne of Destruction, and Worldstone Chamber": "[ACT 5] 세계석 성채, 파괴의 왕좌, 세계석 보관실",
+            "Secret Cow Level": "[ETC] 카우방 (무무 농장)",
+            "Moo Moo Farm": "[ETC] 무무 농장"
         };
 
         function translateTz(name) {
             if (!name) return '정보 없음';
-            const korean = tzTranslations[name];
-            if (korean) {
-                return korean + ' <span style="font-size: 0.8rem; color: var(--text-tertiary);">(' + name + ')</span>';
-            }
-            return name + ' <span style="font-size: 0.8rem; color: var(--text-tertiary);">(미번역)</span>';
+            let cn = name.length > 3 && /^[A-Z]{2}\s/.test(name) ? name.substring(3) : name;
+            return tzTranslations[cn] || cn;
         }
 
-        // 공포의 영역 API 호출
+        function getTierInfo(name) {
+            if (!name) return { tier: '??', exp: '?', loot: '?' };
+            let t = name.length > 3 && /^[A-Z]{2}\s/.test(name) ? name.substring(0, 2) : (tzTiers[name] || '??');
+            return { tier: t, exp: t.charAt(0) || '?', loot: t.charAt(1) || '?' };
+        }
+
+        function getTierColor(grade) {
+            switch(grade.toUpperCase()) {
+                case 'S': return '#ff8000'; case 'A': return '#ffff00'; case 'B': return '#4a54c4';
+                case 'C': return '#00ff00'; case 'D': return '#ffffff'; case 'F': return '#888888';
+                default: return 'var(--text-tertiary)';
+            }
+        }
+
+        function renderTierBadges(tierData, isNow = false) {
+            const expCol = getTierColor(tierData.exp);
+            const lootCol = getTierColor(tierData.loot);
+            const op = isNow ? '0.2' : '0.05';
+            return `
+                <span style="font-size: 0.6rem; background: ${expCol}22; color: ${expCol}; padding: 1px 5px; border-radius: 4px; border: 1px solid ${expCol}44; font-weight: 800;">EXP ${tierData.exp}</span>
+                <span style="font-size: 0.6rem; background: ${lootCol}22; color: ${lootCol}; padding: 1px 5px; border-radius: 4px; border: 1px solid ${lootCol}44; font-weight: 800;">LOOT ${tierData.loot}</span>
+            `;
+        }
+
+        async function fetchTzHistory(nextZoneData) {
+            try {
+                const response = await fetch('/api/terror-zone/history');
+                const history = response.ok ? await response.json() : [];
+                const listContainer = document.getElementById('tz-history-list');
+                let listHtml = '';
+
+                // 다음 공포의 영역 정보 추가
+                if (nextZoneData && nextZoneData.zone) {
+                    const nextTime = getNextTzChangeTime();
+                    const ntStr = nextTime.getHours().toString().padStart(2, '0') + ":" + nextTime.getMinutes().toString().padStart(2, '0');
+                    const nTier = getTierInfo(nextZoneData.zone);
+                    listHtml += `
+                        <li style="margin-bottom: 22px; position: relative; padding-left: 20px; border-left: 2px dashed var(--text-tertiary); opacity: 0.8;">
+                            <div style="position: absolute; left: -7px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg-color); border: 2px solid var(--text-tertiary);"></div>
+                            <div style="display: flex; flex-direction: column;">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                    <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-tertiary); text-shadow: 0 0 5px rgba(0,0,0,0.5);">${ntStr}</span>
+                                    <span style="font-size: 0.55rem; background: #333; color: #aaa; padding: 1px 5px; border-radius: 4px; font-weight: 800; text-transform: uppercase;">Next</span>
+                                </div>
+                                <div style="font-size: 0.9rem; color: var(--text-tertiary); font-style: italic;">${translateTz(nextZoneData.zone)}</div>
+                                <div style="display: flex; gap: 4px; margin-top: 4px;">${renderTierBadges(nTier)}</div>
+                            </div>
+                        </li>
+                    `;
+                }
+
+                if (history && history.length > 0) {
+                    listHtml += history.map((item, idx) => {
+                        const ti = getTierInfo(item.zone);
+                        const isN = idx === 0;
+                        const timeOnly = item.time.split(' ')[1];
+                        const dateOnly = item.time.split(' ')[0].substring(5);
+                        return `
+                            <li style="margin-bottom: 22px; position: relative; padding-left: 20px; border-left: 2px solid ${isN ? 'var(--d2-red)' : 'var(--border-color)'};">
+                                <div style="position: absolute; left: -7px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: ${isN ? 'var(--d2-red)' : 'var(--panel-bg)'}; border: 2px solid ${isN ? '#fff' : 'var(--border-color)'};"></div>
+                                <div style="display: flex; flex-direction: column;">
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                        <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-primary); text-shadow: 0 0 5px rgba(0,0,0,0.5);">${timeOnly}</span>
+                                        <span style="font-size: 0.65rem; color: var(--text-tertiary);">${dateOnly}</span>
+                                        ${isN ? '<span style="font-size: 0.55rem; background: var(--d2-red); color: #fff; padding: 1px 5px; border-radius: 4px; font-weight: 800; text-transform: uppercase;">Now</span>' : ''}
+                                    </div>
+                                    <div style="font-size: 0.9rem; color: ${isN ? 'var(--text-primary)' : 'var(--text-secondary)'}; font-weight: ${isN ? '700' : '400'}; line-height: 1.4;">${translateTz(item.zone)}</div>
+                                    <div style="display: flex; gap: 4px; margin-top: 4px;">${renderTierBadges(ti, isN)}</div>
+                                </div>
+                            </li>
+                        `;
+                    }).join('');
+                }
+                listContainer.innerHTML = listHtml || '<li style="padding:20px; text-align:center; color:var(--text-tertiary);">기록된 이력이 없습니다.</li>';
+            } catch (e) {
+                console.error("Tz History Error:", e);
+            }
+        }
+
         async function fetchTerrorZones() {
             try {
-                const response = await fetch('/api/terror-zone');
-                if (!response.ok) throw new Error('API fetching failed');
-                const data = await response.json();
+                const res = await fetch('/api/terror-zone');
+                if (!res.ok) throw new Error('API failed');
+                const d = await res.json();
+                
+                const currentName = translateTz(d.currentTerrorZone?.zone);
+                const nextName = translateTz(d.nextTerrorZone?.zone);
+                
+                const cTier = getTierInfo(d.currentTerrorZone?.zone);
+                const nTier = getTierInfo(d.nextTerrorZone?.zone);
 
-                const currentName = translateTz(data.currentTerrorZone?.zone);
-                const nextName = translateTz(data.nextTerrorZone?.zone);
-
-                document.getElementById('current-tz-name').innerHTML = currentName;
-                document.getElementById('next-tz-name').innerHTML = nextName;
-
-            } catch (error) {
-                console.error("Terror Zone Fetch Error:", error);
-                document.getElementById('current-tz-name').innerHTML = '데이터를 불러올 수 없습니다';
-                document.getElementById('next-tz-name').innerHTML = '데이터를 불러올 수 없습니다';
+                document.getElementById('current-tz-name').textContent = currentName;
+                document.getElementById('current-tz-badges').innerHTML = renderTierBadges(cTier, true);
+                
+                document.getElementById('next-tz-name').textContent = nextName;
+                document.getElementById('next-tz-badges').innerHTML = renderTierBadges(nTier);
+                
+                fetchTzHistory(d.nextTerrorZone);
+            } catch (e) {
+                console.error("TZ Fetch Error:", e);
+                document.getElementById('current-tz-name').textContent = '데이터를 불러올 수 없습니다';
+                document.getElementById('next-tz-name').textContent = '데이터를 불러올 수 없습니다';
+                fetchTzHistory();
             }
         }
-        fetchTerrorZones();
-        // 10분마다 갱신
-        setInterval(fetchTerrorZones, 600000);
 
-        // 최근 등록된 매물 자동 스크롤
+        fetchTerrorZones();
+        setInterval(fetchTerrorZones, 60000);
+
         const recentPostsContainer = document.getElementById('recent-posts-container');
         let autoScrollInterval;
-
         function startAutoScroll() {
             autoScrollInterval = setInterval(() => {
                 if (recentPostsContainer) {
-                    const rowHeight = 49; // approx tr height
+                    const rowHeight = 49;
                     if (recentPostsContainer.scrollTop + recentPostsContainer.clientHeight >= recentPostsContainer.scrollHeight - 5) {
                         recentPostsContainer.scrollTo({ top: 0, behavior: 'smooth' });
                     } else {
-                        recentPostsContainer.scrollBy({ top: rowHeight, left: 0, behavior: 'smooth' });
+                        recentPostsContainer.scrollBy({ top: rowHeight, behavior: 'smooth' });
                     }
                 }
             }, 3000);
         }
-
         if (recentPostsContainer) {
-            // start immediately
             setTimeout(startAutoScroll, 1500);
-
             recentPostsContainer.addEventListener('mouseenter', () => clearInterval(autoScrollInterval));
-            recentPostsContainer.addEventListener('mouseleave', () => {
-                clearInterval(autoScrollInterval);
-                startAutoScroll();
-            });
+            recentPostsContainer.addEventListener('mouseleave', () => { clearInterval(autoScrollInterval); startAutoScroll(); });
         }
+        // -------------------------------------------------------------------------
+        // 우버디아(Diablo Clone) 현황 관련
+        // -------------------------------------------------------------------------
+        async function fetchUberDiablo() {
+            try {
+                const response = await fetch('/api/uber-diablo');
+                const data = await response.json();
+                renderUberDiablo(data);
+            } catch (error) {
+                console.error('Uber Diablo fetch error:', error);
+            }
+        }
+
+        function getUberStateInfo(state) {
+            const states = [
+                { text: "공포가 성역을 응시합니다", msg: "Terror gazes upon Sanctuary", color: "#888", icon: "👁️" },
+                { text: "공포가 성역에 다가옵니다", msg: "Terror approaches Sanctuary", color: "#aaaaaa", icon: "👣" },
+                { text: "공포가 성역 안에서 형성됩니다", msg: "Terror begins to form", color: "#c7b377", icon: "🌀" },
+                { text: "공포가 성역에 퍼집니다", msg: "Terror spreads across Sanctuary", color: "#ff8000", icon: "🔥" },
+                { text: "곧 성역에 공포가 풀려납니다", msg: "Terror is about to be unleashed", color: "#ff4d4d", icon: "⚡" },
+                { text: "디아블로가 성역을 침공했습니다!", msg: "Diablo has invaded Sanctuary!", color: "#f85149", icon: "💀" }
+            ];
+            const idx = Math.max(0, Math.min(5, state - 1));
+            return states[idx];
+        }
+
+        let currentUberFilter = 'dlc';
+        let latestUberData = null;
+
+        function setUberFilter(filter) {
+            currentUberFilter = filter;
+            // UI 업데이트: 텍스트가 아닌 명시적인 인덱스나 순서로 처리하여 오류 방지
+            const btns = document.querySelectorAll('.uber-toggle-btn');
+            if (filter === 'dlc') {
+                btns[0].classList.add('active');
+                btns[1].classList.remove('active');
+            } else {
+                btns[0].classList.remove('active');
+                btns[1].classList.add('active');
+            }
+            // 재렌더링
+            if (latestUberData) renderUberDiablo(latestUberData);
+        }
+
+        function renderUberDiablo(data) {
+            latestUberData = data;
+            const container = document.getElementById('uber-diablo-container');
+            const servers = (data && data.servers) ? data.servers : (Array.isArray(data) ? data : null);
+            
+            if (!servers || !Array.isArray(servers)) {
+                container.innerHTML = `<div style="color:var(--text-tertiary); text-align:center; padding:15px; font-size:0.75rem;">징조 없음</div>`;
+                return;
+            }
+
+            const regions = { 
+                'Asia': { name: 'ASIA', icon: '🌏' }, 
+                'Europe': { name: 'EUROPE', icon: '🏰' }, 
+                'Americas': { name: 'AMERICAS', icon: '🗽' } 
+            };
+            
+            // 필터링: DLC(악마술사의 군림)는 rotw: false / 확장팩은 rotw: true 
+            const isDlcFilter = currentUberFilter === 'dlc';
+            const filteredServers = servers.filter(s => s.rotw === !isDlcFilter);
+
+            let html = '';
+            const sortedRegionKeys = Object.keys(regions);
+            
+            sortedRegionKeys.forEach((regId, idx) => {
+                const regInfo = regions[regId];
+                const items = filteredServers.filter(d => d.region && d.region.toLowerCase().includes(regId.toLowerCase()));
+                if (items.length === 0) return;
+
+                // 지역 헤더
+                html += `
+                    <div style="margin-top: ${idx === 0 ? '0' : '4px'}; margin-bottom: 2px;">
+                        <div style="display:flex; align-items:center; gap:6px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 2px;">
+                            <span style="font-size:0.9rem;">${regInfo.icon}</span>
+                            <span style="font-weight:800; color:var(--text-secondary); font-size:0.7rem; letter-spacing:0.5px;">${regInfo.name}</span>
+                        </div>
+                    </div>
+                `;
+
+                // 래더 / 스탠 그룹화
+                const ladderItems = items.filter(i => i.ladder).sort((a,b) => a.hardcore - b.hardcore); // Softcore first
+                const nonLadderItems = items.filter(i => !i.ladder).sort((a,b) => a.hardcore - b.hardcore);
+
+                const renderGroup = (title, groupItems) => {
+                    if (groupItems.length === 0) return '';
+                    return `
+                        <div style="margin-top: 4px;">
+                            <div style="font-size:0.55rem; color:var(--brand-primary); font-weight:800; margin-bottom:2px; opacity:0.7;">${title}</div>
+                            <div style="display:flex; flex-direction:column; gap:2px;">
+                                ${groupItems.map(item => {
+                                    const s = getUberStateInfo(item.progress);
+                                    const progressPct = (item.progress / 6) * 100;
+                                    const hcTxt = item.hardcore ? '하드코어' : '소프트코어';
+                                    const badgeColor = item.hardcore ? '#ff4d4d' : '#4dff4d';
+                                    const badgeBg = item.hardcore ? 'rgba(255,77,77,0.05)' : 'rgba(77,255,77,0.05)';
+
+                                    return `
+                                        <div style="padding: 1px 0; display: flex; flex-direction: column; gap: 1px;">
+                                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                                <span class="badge" style="font-size:0.5rem; padding: 0px 3px; background:${badgeBg}; color:${badgeColor}; border: 1px solid ${badgeColor}33; font-weight:700;">
+                                                    ${hcTxt}
+                                                </span>
+                                                <span style="font-size:0.65rem; font-weight:800; color:${s.color}; font-family:monospace;">${item.progress}/6</span>
+                                            </div>
+                                            <div style="height:2px; background:rgba(255,255,255,0.04); border-radius:1px; overflow:hidden; position:relative; margin-top:2px;">
+                                                <div style="width:${progressPct}%; height:100%; background:${s.color}; box-shadow: 0 0 5px ${s.color}66; transition: width 1s ease;"></div>
+                                            </div>
+                                            <div style="font-size:0.55rem; color:${s.color}; font-weight:500; opacity: 0.7; line-height:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${s.text}</div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                };
+
+                html += renderGroup('LADDER', ladderItems);
+                html += renderGroup('NON-LADDER', nonLadderItems);
+            });
+            container.innerHTML = html;
+        }
+
+        fetchUberDiablo();
+        setInterval(fetchUberDiablo, 300000);
     </script>
 
     <footer th:replace="~{fragments/layout :: footer}"></footer>

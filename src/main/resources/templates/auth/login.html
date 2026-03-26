@@ -6,92 +6,350 @@
     <title>로그인 / 회원가입 - 게시판</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <style>
-        .auth-tabs { display: flex; border-bottom: 2px solid var(--d2-border); margin-bottom: 20px; }
-        .auth-tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; color: var(--d2-text); font-weight: bold; }
-        .auth-tab.active { border-bottom: 2px solid var(--d2-gold); color: var(--d2-gold); background: rgba(0,0,0,0.3); }
-        .auth-panel { display: none; }
-        .auth-panel.active { display: block; }
+        :root {
+            --auth-bg: rgba(22, 27, 34, 0.7);
+            --auth-border: rgba(199, 179, 119, 0.3);
+            --kakao-color: #FEE500;
+            --naver-color: #03C75A;
+            --google-color: #FFFFFF;
+        }
+
+        .auth-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 200px);
+            padding: 20px;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 440px;
+            background: var(--auth-bg);
+            backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid var(--auth-border);
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px;
+            margin: 20px;
+            border-radius: 16px;
+            gap: 5px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-weight: 700;
+            font-size: 0.95rem;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+
+        .auth-tab.active {
+            background: var(--brand-primary);
+            color: #000;
+            box-shadow: 0 4px 12px rgba(199, 179, 119, 0.3);
+        }
+
+        .auth-body {
+            padding: 0 30px 30px;
+        }
+
+        .auth-panel {
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .auth-panel.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .auth-form-title {
+            font-family: 'Cinzel', serif;
+            color: var(--brand-primary);
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            padding-left: 4px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--brand-primary);
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 0 4px rgba(199, 179, 119, 0.1);
+        }
+
+        .btn-auth {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-auth-primary {
+            background: var(--accent-gradient);
+            color: #000;
+            box-shadow: 0 8px 20px rgba(199, 179, 119, 0.2);
+        }
+
+        .btn-auth-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(199, 179, 119, 0.3);
+        }
+
+        /* 소셜 로그인 섹션 */
+        .social-divider {
+            display: flex;
+            align-items: center;
+            margin: 30px 0;
+            color: var(--text-tertiary);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .social-divider::before, 
+        .social-divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .social-divider span {
+            padding: 0 15px;
+        }
+
+        .social-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .social-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .social-item:hover {
+            transform: translateY(-3px);
+        }
+
+        .social-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+
+        .social-icon.kakao { background: var(--kakao-color); color: #3c1e1e; }
+        .social-icon.naver { background: var(--naver-color); color: #fff; }
+        .social-icon.google { background: var(--google-color); border: 1px solid #ddd; }
+
+        .social-label {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            font-weight: 700;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        .alert-error { background: rgba(248, 81, 73, 0.1); color: var(--d2-red); border: 1px solid rgba(248, 81, 73, 0.2); }
+        .alert-success { background: rgba(0, 255, 0, 0.05); color: var(--d2-set); border: 1px solid rgba(0, 255, 0, 0.1); }
+        
+        .error { color: var(--d2-red); font-size: 0.8rem; margin-top: 5px; display: block; font-weight: 600; }
     </style>
 </head>
 <body>
     <header th:replace="~{fragments/layout :: header}"></header>
 
-    <main class="container">
-        <div class="form-container glassmorphism">
+    <main class="auth-wrapper">
+        <div class="auth-card">
             <div class="auth-tabs">
                 <div class="auth-tab active" id="tab-login" onclick="switchTab('login')">로그인</div>
                 <div class="auth-tab" id="tab-signup" onclick="switchTab('signup')">회원가입</div>
             </div>
 
-            <!-- 로그인 폼 -->
-            <div id="panel-login" class="auth-panel active">
-                <h2 style="display:none;">로그인</h2>
-                <div th:if="${param.error}" class="alert alert-error">
-                    아이디 또는 비밀번호가 올바르지 않습니다.
-                </div>
-                <div th:if="${param.signup}" class="alert alert-success">
-                    회원가입이 완료되었습니다. 로그인해주세요.
+            <div class="auth-body">
+                <!-- 로그인 폼 -->
+                <div id="panel-login" class="auth-panel active">
+                    <h2 class="auth-form-title">D2PAMING PASS</h2>
+                    
+                    <div th:if="${param.error}" class="alert alert-error">
+                        아이디 또는 비밀번호가 올바르지 않습니다.
+                    </div>
+                    <div th:if="${param.signup}" class="alert alert-success">
+                        회원가입이 완료되었습니다. 로그인해주세요.
+                    </div>
+
+                    <form th:action="@{/auth/login}" method="post">
+                        <div class="form-group">
+                            <label for="login_username">아이디</label>
+                            <input type="text" id="login_username" name="username" placeholder="아이디를 입력하세요" required autofocus>
+                        </div>
+                        <div class="form-group">
+                            <label for="login_password">비밀번호</label>
+                            <input type="password" id="login_password" name="password" placeholder="비밀번호를 입력하세요" required>
+                        </div>
+                        <button type="submit" class="btn-auth btn-auth-primary">접속하기</button>
+                    </form>
+
+                    <div class="social-divider">
+                        <span>또는 소셜 로그인</span>
+                    </div>
+
+                    <div class="social-grid">
+                        <div class="social-item" title="카카오 로그인">
+                            <div class="social-icon kakao">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.558 1.712 4.8 4.313 6.095l-.83 3.033c-.046.173.056.347.227.388.053.013.109.011.161-.005l3.565-2.373c.184.053.374.103.564.111 4.97 0 9-3.185 9-7.115S16.97 3 12 3z"/></svg>
+                            </div>
+                            <span class="social-label">KAKAO</span>
+                        </div>
+                        <div class="social-item" title="네이버 로그인">
+                            <div class="social-icon naver">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16.273 12.845L11.171 2h-6.23v20h6.23V11.155l5.102 10.845h6.23V2h-6.23v10.845z"/></svg>
+                            </div>
+                            <span class="social-label">NAVER</span>
+                        </div>
+                        <div class="social-item" title="구글 로그인">
+                            <div class="social-icon google">
+                                <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c3.11 0 5.71-1.03 7.61-2.79l-3.57-2.77c-1.01.68-2.3 1.08-4.04 1.08-3.11 0-5.74-2.1-6.68-4.93H1.72v2.87C3.65 20.35 7.57 23 12 23z"/><path fill="#FBBC05" d="M5.32 13.59c-.24-.68-.38-1.41-.38-2.17s.14-1.49.38-2.17V6.38H1.72C.92 7.99.46 9.79.46 12s.46 3.99 1.25 5.61l3.61-2.02z"/><path fill="#EA4335" d="M12 5.38c1.69 0 3.21.58 4.41 1.72l3.31-3.31C17.71 1.95 15.11 1 12 1 7.57 1 3.65 3.65 1.72 4.38h3.61c.94-2.83 3.58-4.93 6.67-4.93z"/></svg>
+                            </div>
+                            <span class="social-label">GOOGLE</span>
+                        </div>
+                    </div>
                 </div>
 
-                <form th:action="@{/auth/login}" method="post">
-                    <div class="form-group">
-                        <label for="login_username">아이디</label>
-                        <input type="text" id="login_username" name="username" required autofocus>
-                    </div>
-                    <div class="form-group">
-                        <label for="login_password">비밀번호</label>
-                        <input type="password" id="login_password" name="password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-full">로그인</button>
-                </form>
-            </div>
-
-            <!-- 회원가입 폼 -->
-            <div id="panel-signup" class="auth-panel">
-                <h2 style="display:none;">회원가입</h2>
-                <form th:action="@{/auth/signup}" th:object="${signupForm}" method="post">
-                    <div class="form-group">
-                        <label for="username">아이디</label>
-                        <input type="text" id="username" th:field="*{username}">
-                        <span class="error" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></span>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">비밀번호</label>
-                        <input type="password" id="password" th:field="*{password}">
-                        <span class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
-                    </div>
-                    <div class="form-group">
-                        <label for="passwordConfirm">비밀번호 확인</label>
-                        <input type="password" id="passwordConfirm" th:field="*{passwordConfirm}">
-                        <span class="error" th:if="${#fields.hasErrors('passwordConfirm')}"
-                            th:errors="*{passwordConfirm}"></span>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-full">회원가입</button>
-                </form>
+                <!-- 회원가입 폼 -->
+                <div id="panel-signup" class="auth-panel">
+                    <h2 class="auth-form-title">JOIN D2PAMING</h2>
+                    <form th:action="@{/auth/signup}" th:object="${signupForm}" method="post">
+                        <div class="form-group">
+                            <label for="username">아이디</label>
+                            <input type="text" id="username" th:field="*{username}" placeholder="아이디를 정해주세요">
+                            <span class="error" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">비밀번호</label>
+                            <input type="password" id="password" th:field="*{password}" placeholder="비밀번호 설정">
+                            <span class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="passwordConfirm">비밀번호 확인</label>
+                            <input type="password" id="passwordConfirm" th:field="*{passwordConfirm}" placeholder="비밀번호 재입력">
+                            <span class="error" th:if="${#fields.hasErrors('passwordConfirm')}"
+                                th:errors="*{passwordConfirm}"></span>
+                        </div>
+                        <button type="submit" class="btn-auth btn-auth-primary">계정 생성</button>
+                    </form>
+                </div>
             </div>
         </div>
     </main>
 
     <footer th:replace="~{fragments/layout :: footer}"></footer>
 
-    <script th:inline="javascript">
+    <script th:inline="none">
         function switchTab(tabId) {
-            document.getElementById('tab-login').classList.remove('active');
-            document.getElementById('tab-signup').classList.remove('active');
-            document.getElementById('panel-login').classList.remove('active');
-            document.getElementById('panel-signup').classList.remove('active');
+            const tLogin = document.getElementById('tab-login');
+            const tSignup = document.getElementById('tab-signup');
+            const pLogin = document.getElementById('panel-login');
+            const pSignup = document.getElementById('panel-signup');
             
-            document.getElementById('tab-' + tabId).classList.add('active');
-            document.getElementById('panel-' + tabId).classList.add('active');
+            if(!tLogin || !tSignup || !pLogin || !pSignup) return;
+
+            tLogin.classList.remove('active');
+            tSignup.classList.remove('active');
+            pLogin.classList.remove('active');
+            pSignup.classList.remove('active');
+            
+            if(document.getElementById('tab-' + tabId)) document.getElementById('tab-' + tabId).classList.add('active');
+            if(document.getElementById('panel-' + tabId)) document.getElementById('panel-' + tabId).classList.add('active');
+            
+            if(tabId === 'login') {
+                const li = document.getElementById('login_username');
+                if(li) setTimeout(() => li.focus(), 300);
+            } else {
+                const si = document.getElementById('username');
+                if(si) setTimeout(() => si.focus(), 300);
+            }
         }
 
-        // Binding 에러가 있으면(회원가입 도중 에러) 자동으로 회원가입 탭 열기
-        /*<![CDATA[*/
-        var hasErrors = /*[[${#fields.hasErrors('${signupForm.*}')}]]*/ false;
-        if (hasErrors) {
-            switchTab('signup');
-        }
-        /*]]>*/
+        document.addEventListener('DOMContentLoaded', () => {
+            const errs = document.querySelectorAll('.error');
+            if(errs.length > 0) {
+                const isSignupForm = Array.from(document.querySelectorAll('form')).some(f => f.action.includes('signup') && f.querySelectorAll('.error').length > 0);
+                if(isSignupForm) switchTab('signup');
+            }
+        });
     </script>
 </body>
 </html>
